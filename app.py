@@ -10,15 +10,15 @@ import os
 st.set_page_config(page_title="Audio2Art", page_icon="🎨", layout="wide")
 
 # ✅ Load OpenAI API Key securely from environment variable
-openai.api_key = st.secrets["OPENAI_API_KEY"]
-  # Make sure to set this in your environment!
+openai_api_key = st.secrets.get("OPENAI_API_KEY")  # Safely fetch API key
+if not openai_api_key:
+    st.error("⚠️ OpenAI API key is missing! Add it in Streamlit Secrets.")
+else:
+    openai.api_key = openai_api_key
 
-if not openai.api_key:
-    st.error("⚠️ OpenAI API key is missing! Set it as an environment variable.")
-
-# ✅ Load Whisper model for speech recognition
-device = "cuda" if torch.cuda.is_available() else "cpu"
-whisper_pipeline = pipeline("automatic-speech-recognition", model="openai/whisper-small", device=device)
+# ✅ Load Whisper model for speech recognition (Optimized for Streamlit Cloud)
+device = "cpu"  # Force CPU mode for better compatibility on Streamlit Cloud
+whisper_pipeline = pipeline("automatic-speech-recognition", model="distil-whisper/distil-small.en", device=device)
 
 # ✅ Function: Transcribe audio using Hugging Face Transformers (Whisper)
 def transcribe_audio(uploaded_audio):
@@ -42,21 +42,30 @@ def generate_image(prompt):
     """Generates an image using OpenAI's DALL·E API."""
     try:
         with st.spinner("🎨 Generating AI Art... Please wait."):
-            response = openai.Image.create(
+            response = openai.images.generate(
                 model="dall-e-2",
                 prompt=prompt,
                 n=1,
                 size="1024x1024"
             )
 
-        if "data" in response:
-            image_url = response["data"][0]["url"]
+        if hasattr(response, "data"):
+            image_url = response.data[0].url
             st.image(image_url, caption="🎨 Generated Image", use_container_width=True)
         else:
-            st.error("⚠️ Error generating image.")
-    
+            st.error("⚠️ No image received from OpenAI.")
+
     except Exception as e:
         st.error(f"❌ Image generation failed: {e}")
+
+# ✅ Function: Load Placeholder Image (Fix for External Image Loading)
+def load_placeholder_image():
+    """Loads a placeholder image in case of failure."""
+    try:
+        st.image("https://picsum.photos/1024/1024", caption="🎭 AI Creativity", use_container_width=True)
+    except Exception as e:
+        st.warning("⚠️ Could not load the placeholder image.")
+        st.write(f"Error: {e}")
 
 # ✅ Streamlit UI
 def main():
@@ -88,7 +97,8 @@ def main():
                 st.error("⚠️ Could not transcribe the audio. Please try again.")
 
     with col2:
-        st.image("https://picsum.photos/1024/1024", caption="🎭 AI Creativity", use_container_width=True)
+        load_placeholder_image()
 
 if __name__ == "__main__":
     main()
+
