@@ -1,7 +1,7 @@
 import streamlit as st
 import torch
 from transformers import pipeline
-from openai import OpenAI  # ✅ Updated OpenAI import
+import openai
 import tempfile
 import time
 import os
@@ -10,11 +10,14 @@ import os
 st.set_page_config(page_title="Audio2Art", page_icon="🎨", layout="wide")
 
 # ✅ Load OpenAI API Key securely from environment variable
-openai_api_key = st.secrets.get("OPENAI_API_KEY")  # Safely fetch API key
+openai_api_key = st.secrets.get("OPENAI_API_KEY")  # Fetch API key safely
 if not openai_api_key:
     st.error("⚠️ OpenAI API key is missing! Add it in Streamlit Secrets.")
-else:
-    client = OpenAI(api_key=openai_api_key)  # ✅ Corrected OpenAI Client Usage
+    st.stop()
+
+# ✅ Set API Key in Environment for OpenAI Client
+os.environ["OPENAI_API_KEY"] = openai_api_key
+client = openai.OpenAI()  # ✅ Corrected OpenAI Client Usage
 
 # ✅ Load Whisper model for speech recognition (Optimized for Streamlit Cloud)
 device = "cpu"  # Force CPU mode for better compatibility on Streamlit Cloud
@@ -42,18 +45,19 @@ def generate_image(prompt):
     """Generates an image using OpenAI's DALL·E API."""
     try:
         with st.spinner("🎨 Generating AI Art... Please wait."):
-            response = client.images.generate(  # ✅ Corrected method for OpenAI SDK v1.0+
+            response = client.images.generate(
                 model="dall-e-2",
                 prompt=prompt,
                 n=1,
                 size="1024x1024"
             )
 
-        if hasattr(response, "data"):
-            image_url = response.data[0].url  # ✅ Fix: Corrected response handling
+        if response.data:
+            image_url = response.data[0].url  # ✅ Corrected response handling
             st.image(image_url, caption="🎨 Generated Image", use_container_width=True)
         else:
             st.error("⚠️ No image received from OpenAI.")
+
     except Exception as e:
         st.error(f"❌ Image generation failed: {e}")
 
