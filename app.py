@@ -6,7 +6,13 @@ import tempfile
 import time
 
 # Set OpenAI API Key (Replace with your actual API key)
-openai.api_key = "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"
+import os
+
+# Load API key from environment variable
+openai.api_key = os.getenv("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")
+
+if not openai.api_key:
+    st.error("⚠️ OpenAI API key is missing! Set it as an environment variable.")
 
 # Load Whisper model locally using transformers
 device = "cuda" if torch.cuda.is_available() else "cpu"
