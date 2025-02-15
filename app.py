@@ -26,17 +26,17 @@ def transcribe_audio(uploaded_audio):
 
 # Function to generate an image using OpenAI DALL·E API
 def generate_image(prompt):
-    """Generates an image using OpenAI's DALL·E API."""
+    """Generates an image using OpenAI's DALL·E API (Updated for v1)."""
     with st.spinner("🎨 Generating AI Art... Please wait."):
-        response = openai.Image.create(
+        response = openai.images.generate(  # ✅ Correct API method
             model="dall-e-2",
             prompt=prompt,
             n=1,
             size="1024x1024"
         )
 
-    if "data" in response:
-        image_url = response["data"][0]["url"]
+    if hasattr(response, "data"):
+        image_url = response.data[0].url
         st.image(image_url, caption="🎨 Generated Image", use_container_width=True)
     else:
         st.error("⚠️ Error generating image.")
