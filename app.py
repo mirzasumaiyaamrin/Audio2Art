@@ -15,11 +15,10 @@ if not openai_api_key:
     st.error("⚠️ OpenAI API key is missing! Add it in Streamlit Secrets.")
     st.stop()
 
-# ✅ Set API Key in Environment for OpenAI Client
-os.environ["OPENAI_API_KEY"] = openai_api_key
-client = openai.OpenAI()  # ✅ Corrected OpenAI Client Usage
+# ✅ Initialize OpenAI Client (Fixed for v1.0+)
+client = openai.Client(api_key=openai_api_key)  # ✅ Corrected OpenAI Client Usage
 
-# ✅ Load Whisper model for speech recognition (Optimized for Streamlit Cloud)
+# ✅ Load Whisper model for speech recognition
 device = "cpu"  # Force CPU mode for better compatibility on Streamlit Cloud
 whisper_pipeline = pipeline("automatic-speech-recognition", model="distil-whisper/distil-small.en", device=device)
 
@@ -104,5 +103,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
