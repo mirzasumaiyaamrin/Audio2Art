@@ -5,7 +5,7 @@ import openai
 import tempfile
 import time
 import os
-
+from openai import OpenAI
 # ✅ Ensure Streamlit Page Config is the FIRST command
 st.set_page_config(page_title="Audio2Art", page_icon="🎨", layout="wide")
 
