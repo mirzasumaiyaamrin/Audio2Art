@@ -1,0 +1,7 @@
+streamlit
+sounddevice
+numpy
+torch
+transformers
+openai
+wave
