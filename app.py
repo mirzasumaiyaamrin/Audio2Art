@@ -10,7 +10,7 @@ import os
 st.set_page_config(page_title="Audio2Art", page_icon="🎨", layout="wide")
 
 # ✅ Load OpenAI API Key securely from environment variable
-openai.api_key = os.getenv("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")  # Make sure to set this in your environment!
+openai.api_key = os.getenv("OPENAI_API_KEY")  # Make sure to set this in your environment!
 
 if not openai.api_key:
     st.error("⚠️ OpenAI API key is missing! Set it as an environment variable.")
