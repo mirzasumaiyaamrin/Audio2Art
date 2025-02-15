@@ -15,8 +15,8 @@ if not openai_api_key:
     st.error("⚠️ OpenAI API key is missing! Add it in Streamlit Secrets.")
     st.stop()
 
-# ✅ Initialize OpenAI Client (Fixed for v1.0+)
-client = openai.Client(api_key=openai_api_key)  # ✅ Corrected OpenAI Client Usage
+# ✅ Set OpenAI API Key (Fixed)
+openai.api_key = openai_api_key
 
 # ✅ Load Whisper model for speech recognition
 device = "cpu"  # Force CPU mode for better compatibility on Streamlit Cloud
@@ -44,15 +44,14 @@ def generate_image(prompt):
     """Generates an image using OpenAI's DALL·E API."""
     try:
         with st.spinner("🎨 Generating AI Art... Please wait."):
-            response = client.images.generate(
-                model="dall-e-2",
+            response = openai.Image.create(  # ✅ Fixed OpenAI API Call
                 prompt=prompt,
                 n=1,
                 size="1024x1024"
             )
 
-        if response.data:
-            image_url = response.data[0].url  # ✅ Corrected response handling
+        if "data" in response:
+            image_url = response["data"][0]["url"]  # ✅ Fixed response handling
             st.image(image_url, caption="🎨 Generated Image", use_container_width=True)
         else:
             st.error("⚠️ No image received from OpenAI.")
