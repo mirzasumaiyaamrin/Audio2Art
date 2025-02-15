@@ -1,6 +1,6 @@
 streamlit
-numpy
 torch
 transformers
 openai
-wave
+numpy
+soundfile
