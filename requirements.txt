@@ -1,6 +1,8 @@
-streamlit
-torch
-transformers
-openai
-numpy
-soundfile
+streamlit==1.30.0
+torch==2.2.0
+transformers==4.37.0
+openai==1.11.0
+numpy==1.26.4
+pydub==0.25.1
+ffmpeg-python==0.2.0
+
