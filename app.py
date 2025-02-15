@@ -1,42 +1,32 @@
-#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
 import streamlit as st
-import sounddevice as sd
 import wave
 import numpy as np
 import torch
 from transformers import pipeline
 import openai
-from tempfile import NamedTemporaryFile
 import time
 
 # Set OpenAI API Key (Replace with your actual API key)
-openai.api_key = "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"
+openai.api_key = "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"
 
 # Load Whisper model locally using transformers
 device = "cuda" if torch.cuda.is_available() else "cpu"
 whisper_pipeline = pipeline("automatic-speech-recognition", model="openai/whisper-small", device=device)
 
-# Function to record audio
-def record_audio(duration=5, samplerate=44100):
-    """Records audio and saves it as a temporary WAV file."""
-    with st.spinner("🎤 Recording... Speak now!"):
-        audio_data = sd.rec(int(duration * samplerate), samplerate=samplerate, channels=1, dtype=np.int16)
-        sd.wait()
-    
-    temp_audio = NamedTemporaryFile(delete=False, suffix=".wav")
-    with wave.open(temp_audio.name, 'wb') as wf:
-        wf.setnchannels(1)
-        wf.setsampwidth(2)
-        wf.setframerate(samplerate)
-        wf.writeframes(audio_data.tobytes())
-
-    return temp_audio.name
+# Function to upload audio instead of recording
+def upload_audio():
+    st.info("🔊 Please upload a recorded voice file (WAV format).")
+    audio_file = st.file_uploader("Choose an audio file", type=["wav", "mp3", "ogg"])
+    if audio_file:
+        st.audio(audio_file, format="audio/wav")
+        return audio_file
+    return None
 
 # Function to transcribe audio using Hugging Face Transformers (Whisper)
-def transcribe_audio(audio_path):
+def transcribe_audio(audio_file):
     """Transcribes speech locally using transformers' Whisper model."""
     with st.spinner("📝 Transcribing audio..."):
-        result = whisper_pipeline(audio_path)
+        result = whisper_pipeline(audio_file)
     return result.get("text", "⚠️ Could not transcribe the audio.")
 
 # Function to generate an image using OpenAI DALL·E API
@@ -62,21 +52,20 @@ def main():
     st.set_page_config(page_title="Audio2Art", page_icon="🎨", layout="wide")
     
     st.sidebar.title("🔊 Audio2Art Settings")
-    duration = st.sidebar.slider("🎤 Recording Duration (seconds)", 3, 10, 5)
-    st.sidebar.write("🎙️ Speak a description, and AI will create an image!")
-    
+    st.sidebar.write("🎙️ Upload a description, and AI will create an image!")
+
     st.title("🎨 Audio2Art: Voice to AI Art")
-    st.write("Transform your voice into stunning AI-generated artwork! Record your voice, let AI transcribe it, and watch your words turn into visuals.")
-    
+    st.write("Transform your voice into stunning AI-generated artwork! Upload a recorded voice file, let AI transcribe it, and watch your words turn into visuals.")
+
     col1, col2 = st.columns([1, 2])
+    
     with col1:
-        if st.button("🎤 Start Recording", use_container_width=True):
-            audio_path = record_audio(duration)
-            st.success("✅ Recording complete! Transcribing...")
-            
-            prompt = transcribe_audio(audio_path)
+        audio_file = upload_audio()
+        if audio_file:
+            st.success("✅ Audio uploaded! Transcribing...")
+            prompt = transcribe_audio(audio_file)
             st.success(f"📝 You said: {prompt}")
-            
+
             with st.spinner("🎨 Generating AI Art..."):
                 time.sleep(1)  # Adding a slight delay for better UI experience
                 generate_image(prompt)
